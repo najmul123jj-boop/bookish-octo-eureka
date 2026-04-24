@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HGZY  VIP signal </title>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<style>
+:root {
+  --neon-cyan: #00f2ff;
+  --neon-pink: #ff00ea;
+  --neon-yellow: #fbff00;
+  --panel-bg: rgba(10, 15, 24, 0.95);
+  --glass: rgba(255, 255, 255, 0.03);
+  --red: #ff3366;
+  --green: #00ff88;
+  --gold: #ffcc00;
+  --violet: #bf5af2;
+}
+
+* { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+body, html {
+  margin: 0; padding: 0;
+  height: 100vh; width: 100vw;
+  background: #000; overflow: hidden;
+}
+
+iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none; z-index: 1;
+}
+
+/* Password Screen */
+#login-screen {
+  position: absolute;
+  top: 20px; left: 10px;
+  width: 230px;
+  z-index: 9999;
+  background: var(--panel-bg);
+  padding: 2px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+  touch-action: none;
+}
+
+#login-screen::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(var(--neon-cyan), var(--neon-pink), var(--neon-yellow), var(--neon-cyan));
+  animation: rotateBorder 4s linear infinite;
+  z-index: 0;
+}
+
+@keyframes rotateBorder { 100% { transform: rotate(360deg); } }
+
+.login-inner {
+  position: relative;
+  background: var(--panel-bg);
+  border-radius: 16px;
+  padding: 20px 15px;
+  z-index: 1;
+  text-align: center;
+}
+
+.login-box h2 { 
+  color: #fff; 
+  font-size: 12px; 
+  margin: 0 0 15px 0; 
+  text-transform: uppercase; 
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--neon-cyan);
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+.login-box button {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+  color: #fff;
+  border: none;
+  padding: 10px 0;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 11px;
+  cursor: pointer;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+/* Main Panel */
+.main-container {
+  position: absolute;
+  top: 20px; left: 10px;
+  width: 85%;
+  max-width: 310px;
+  z-index: 9999;
+  touch-action: none;
+  display: none;
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  border-radius: 25px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.brand { display: flex; align-items: center; gap: 5px; font-weight: 900; font-size: 12px; color: var(--neon-cyan); text-transform: uppercase; }
+.status-indicator { background: rgba(0, 255, 136, 0.1); padding: 3px 8px; border-radius: 12px; font-size: 8px; color: var(--green); border: 1px solid var(--green); display: flex; align-items: center; gap: 4px; }
+.dot-pulse { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat-card { background: var(--glass); padding: 8px; border-radius: 12px; text-align: center; }
+.stat-label { font-size: 8px; text-transform: uppercase; color: #888; display: block; }
+.stat-value { font-size: 13px; font-weight: 800; color: var(--gold); }
+
+.prediction-box {
+  background: rgba(0,0,0,0.5);
+  border-radius: 18px;
+  padding: 12px 5px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 12px;
+}
+
+#prediction-text { font-size: 60px; font-weight: 900; margin: 0; line-height: 1; }
+.big-text { color: var(--green); text-shadow: 0 0 20px var(--green); }
+.small-text { color: var(--red); text-shadow: 0 0 20px var(--red); }
+
+.history-list { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.h-dot { width: 25px; height: 25px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+.bg-red { background: var(--red); }
+.bg-green { background: var(--green); }
+.bg-violet { background: linear-gradient(135deg, var(--red) 50%, var(--violet) 50%); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.urgent { color: var(--red) !important; animation: shake 0.2s infinite; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }
+</style>
+</head>
+<body>
+
+<iframe src="https://hgnice.bet/#/register?invitationCode=511711502736"></iframe>
+
+<div id="login-screen">
+  <div class="login-inner">
+    <div class="login-box">
+      <h2>SYSTEM SECURED</h2>
+      <input type="password" id="pass-input" placeholder="Enter PIN">
+      <button onclick="checkPass()">ACTIVATE AI</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-container" id="panel">
+  <div class="glass-panel">
+    <div class="header">
+      <div class="brand">DKWin VIP PRO</div>
+      <div class="status-indicator"><div class="dot-pulse"></div> SERVER LIVE</div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-label">Period</span><span id="period-id" class="stat-value">----</span></div>
+      <div class="stat-card"><span class="stat-label">Time Left</span><span id="time-left" class="stat-value">30</span></div>
+    </div>
+
+    <div class="prediction-box">
+      <span class="stat-label" style="color: var(--gold); margin-bottom: 5px;">AI PREDICTION</span>
+      <div id="prediction-text" style="color: #444; font-size: 30px;">CONNECTING...</div>
+      
+      <div id="details-view" style="display: flex; justify-content: space-around; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; visibility: hidden;">
+        <div><span class="stat-label">Number</span><span id="num-val" style="color: #fff; font-weight: 800;">--</span></div>
+        <div><span class="stat-label">Color</span><span id="color-val" style="font-weight: 800;">---</span></div>
+      </div>
+    </div>
+
+    <div class="history-container">
+      <div style="font-size: 8px; color: #666; text-align: center; margin-bottom: 5px;">LAST RESULTS</div>
+      <div id="history-box" class="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBPBQOeApFZQwGX8G4mZxhY5C2jjN6VWmU",
+  authDomain: "dkwin-panel-ai.firebaseapp.com",
+  databaseURL: "https://dkwin-panel-ai-default-rtdb.firebaseio.com",
+  projectId: "dkwin-panel-ai",
+  storageBucket: "dkwin-panel-ai.firebasestorage.app",
+  messagingSenderId: "925573387640",
+  appId: "1:925573387640:web:8faf648b0b89933c89e48d",
+  measurementId: "G-X3ZFCRWEH8"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+function checkPass() {
+    const input = document.getElementById('pass-input').value;
+    if (input === "VIP100") {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('panel').style.display = 'block';
+        startEngine();
+    } else {
+        alert("ACCESS DENIED");
+    }
+}
+
+let lastPeriod = "";
+
+function startEngine() {
+  setInterval(() => {
+    const now = new Date();
+    const sec = now.getSeconds();
+    const remain = 30 - (sec % 30);
+    
+    // Period Calculation
+    const totalSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + sec;
+    const periodIdx = Math.floor(totalSeconds / 30);
+    const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+    const currentP = `${dateStr}${String(periodIdx).padStart(4,'0')}`;
+
+    document.getElementById("time-left").textContent = remain < 10 ? "0" + remain : remain;
+    
+    if (currentP !== lastPeriod) {
+      lastPeriod = currentP;
+      document.getElementById("period-id").textContent = currentP.slice(-4);
+      fetchSignalFromServer(currentP);
+    }
+  }, 1000);
+}
+
+function fetchSignalFromServer(period) {
+  const predText = document.getElementById("prediction-text");
+  predText.textContent = "ANALYZING";
+  predText.style.fontSize = "25px";
+  predText.style.color = "var(--gold)";
+
+  // Firebase ডাটা রিড করা
+  database.ref('signals/' + period).once('value').then((snapshot) => {
+    const data = snapshot.val();
+    if(data) {
+      displaySignal(data.result, data.numbers);
+    } else {
+      // যদি সার্ভারে ওই পিরিয়ডের ডেটা না থাকে, তবে অটো ব্যাকআপ সিগন্যাল
+      generateBackupSignal();
+    }
+  });
+}
+
+function displaySignal(res, nums) {
+  const predText = document.getElementById("prediction-text");
+  predText.textContent = res.toUpperCase();
+  predText.style.fontSize = "60px";
+  predText.className = res.toLowerCase() === "big" ? "big-text" : "small-text";
+  
+  document.getElementById("num-val").textContent = nums;
+  document.getElementById("details-view").style.visibility = "visible";
+  
+  // Color Logic
+  const firstNum = parseInt(nums.split(',')[0]);
+  const cData = getColor(firstNum);
+  const cVal = document.getElementById("color-val");
+  cVal.textContent = cData.name;
+  cVal.style.color = cData.hex;
+  
+  addToHistory(firstNum, cData.class);
+}
+
+function generateBackupSignal() {
+    const isBig = Math.random() > 0.5;
+    const nums = isBig ? "5,7" : "2,4";
+    displaySignal(isBig ? "BIG" : "SMALL", nums);
+}
+
+function getColor(n) {
+  if (n === 0 || n === 5) return { name: "Violet", hex: "#bf5af2", class: "bg-violet" };
+  return n % 2 === 0 ? { name: "Red", hex: "#ff3366", class: "bg-red" } : { name: "Green", hex: "#00ff88", class: "bg-green" };
+}
+
+function addToHistory(n, cls) {
+  const hb = document.getElementById("history-box");
+  const dot = document.createElement("div");
+  dot.className = `h-dot ${cls}`;
+  dot.textContent = n;
+  hb.prepend(dot);
+  if(hb.children.length > 7) hb.removeChild(hb.lastChild);
+}
+
+// Draggable Logic
+function drag(el) {
+  let ox, oy;
+  el.ontouchstart = e => { ox = e.touches[0].clientX - el.offsetLeft; oy = e.touches[0].clientY - el.offsetTop; };
+  el.ontouchmove = e => { el.style.left = (e.touches[0].clientX - ox)+'px'; el.style.top = (e.touches[0].clientY - oy)+'px'; };
+}
+drag(document.getElementById('login-screen'));
+drag(document.getElementById('panel'));
+</script>
+</body>
+</html>
